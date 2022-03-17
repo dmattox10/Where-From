@@ -1,0 +1,6 @@
+{
+  "appId": "com.danielmattox.wherefrom",
+  "appName": "where-from",
+  "webDir": "build",
+  "bundledWebRuntime": false
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">where-from</string>
+    <string name="title_activity_main">where-from</string>
+    <string name="package_name">com.danielmattox.wherefrom</string>
+    <string name="custom_url_scheme">com.danielmattox.wherefrom</string>
+</resources>
