@@ -6,9 +6,11 @@ missing down the side of the sofa.
 
 ## What it does
 
-Replaces the 81 physical construction cards. It shows the three piles the way
-they sit on a table — a face-down deck with its face-up discard beside it — and
-turns all three over on a tap, with the cards flipping through the air.
+Replaces the 81 physical construction cards. Three face-down decks across the
+top, the number each one has already turned over directly underneath it, and a
+tap turns all three over — the card lifts off its deck, flips through the air
+and lands on the number below. Turned sideways the piles spread out instead,
+each deck alongside its own number, six cards in a row.
 
 - **The real deck.** 81 cards. House numbers 1–15 on a bell (3, 3, 4, 5, 6, 7,
   8, 9, 8, 7, 6, 5, 4, 3, 3) and six actions at 18/18/18/9/9/9.

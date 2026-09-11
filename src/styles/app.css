@@ -11,8 +11,8 @@
   --ink-soft:   #7A6A54;
   --gold:       #D9A128;
 
-  --gap:  clamp(8px, 2.4vw, 15px);
-  --pad:  clamp(12px, 4vw, 22px);
+  --gap:  clamp(6px, 1.8vw, 15px);
+  --pad:  clamp(8px, 2.5vw, 22px);
   --card-radius: clamp(9px, 2.6vw, 14px);
   --ratio: 5 / 7;
 
@@ -120,42 +120,42 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding-block: clamp(4px, 2vw, 14px);
-  /* Size containment gives the grid below a height it can measure against;
-     without a definite parent the percentage collapses the rows to nothing. */
+  padding-block: clamp(4px, 1.5vw, 12px);
+  /* Size containment gives the grid below a height it can measure against. */
   container-type: size;
 }
 
 /*
- * Three rows, one per pile, each a deck with its discard beside it. The block
- * is sized off the height available and the cards follow, which on a phone is
- * worth about half again the card size a three-column layout can reach.
+ * Two rows of three: the three decks across the top, the number each one has
+ * already turned over directly underneath it.
+ *
+ * Three cards across a phone is a wide, short block, so the width is what runs
+ * out first and the height left over goes into the gap between the rows. The
+ * max-width caps that from the other side — it is the widest the cards can be
+ * and still leave both rows and the gap inside the height available, so the
+ * layout fits on a short screen instead of running off the bottom of it.
  */
 .table__grid {
+  --drop-gap: clamp(14px, min(31cqw, 22cqh), 150px);
   display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  gap: var(--gap);
-  /* Fit the block to whichever way round the space runs out first. Taking the
-     height straight from the container and clamping the width afterwards lets
-     max-width win the argument and stretches the cards out of shape. */
-  height: 100%;
-  height: min(100cqh, calc(100cqw * 21 / 10));
-  aspect-ratio: 10 / 21;
-  max-width: min(100%, 430px);
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: var(--gap);
+  width: 100%;
+  max-width: min(100%, 460px, calc((100cqh - var(--drop-gap)) * 1.071 + 2 * var(--gap)));
+  margin-inline: auto;
 }
 
-.site { min-width: 0; min-height: 0; }
+.site { min-width: 0; }
 
 .site__hit {
-  /* The 3D stage. Every card in this row turns inside this perspective. */
+  /* The 3D stage. Every card in this pile turns inside this perspective. */
   perspective: 1500px;
   perspective-origin: 50% 45%;
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
+  grid-template-rows: auto auto;
+  row-gap: var(--drop-gap);
   width: 100%;
-  height: 100%;
   padding: 0;
   border: 0;
   background: none;
@@ -166,7 +166,7 @@ body {
 
 .slot {
   position: relative;
-  height: 100%;
+  aspect-ratio: var(--ratio);
   border-radius: var(--card-radius);
 }
 
@@ -330,8 +330,8 @@ body {
 
 /* ----------------------------------------------------------- flight *
  *  The card lifts off the deck, turns over in the air and lands on the
- *  discard. Travel and turn are split across two elements so the arc and
- *  the rotation can be eased independently.
+ *  number below it. Travel and turn are split across two elements so the
+ *  arc and the rotation can be eased independently.
  * ------------------------------------------------------------------ */
 
 .flyer {
@@ -339,10 +339,10 @@ body {
   top: 0;
   left: 0;
   z-index: 10;
-  width: calc((100% - var(--gap)) / 2);
-  height: 100%;
+  width: 100%;
+  aspect-ratio: var(--ratio);
   transform-style: preserve-3d;
-  animation: travel var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
+  animation: travel-down var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
   pointer-events: none;
 }
 
@@ -367,36 +367,48 @@ body {
   box-shadow: 0 24px 34px -12px rgba(0, 0, 0, .75), 0 1px 0 rgba(255, 255, 255, .1) inset;
 }
 
-@keyframes travel {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  46%  { transform: translate3d(calc(50% + var(--gap) / 2), -4%, 120px) scale(1.02); }
-  100% { transform: translate3d(calc(100% + var(--gap)), 0, 0) scale(1); }
-}
-
 @keyframes turn {
   0%   { transform: rotateY(0deg); }
   100% { transform: rotateY(180deg); }
 }
 
+@keyframes travel-down {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  46%  { transform: translate3d(-5%, calc(50% + var(--drop-gap) / 2), 120px) scale(1.02); }
+  100% { transform: translate3d(0, calc(100% + var(--drop-gap)), 0) scale(1); }
+}
+
+@keyframes travel-across {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  46%  { transform: translate3d(calc(50% + var(--gap) / 2), -4%, 120px) scale(1.02); }
+  100% { transform: translate3d(calc(100% + var(--gap)), 0, 0) scale(1); }
+}
+
 /* The card's shadow on the felt, travelling with it but staying flat. */
 .flyer__shadow {
   position: absolute;
-  top: 3%;
+  top: 0;
   left: 0;
   z-index: 9;
-  width: calc((100% - var(--gap)) / 2);
-  height: 94%;
+  width: 100%;
+  aspect-ratio: var(--ratio);
   border-radius: var(--card-radius);
   background: #000;
   filter: blur(11px);
   pointer-events: none;
-  animation: cast var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
+  animation: cast-down var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
 }
 
-@keyframes cast {
-  0%   { transform: translate3d(0, 4px, 0) scale(.94); opacity: .5; }
-  46%  { transform: translate3d(calc(50% + var(--gap) / 2), 20px, 0) scale(1.12); opacity: .26; }
-  100% { transform: translate3d(calc(100% + var(--gap)), 4px, 0) scale(.94); opacity: .5; }
+@keyframes cast-down {
+  0%   { transform: translate3d(0, 4px, 0) scale(.9); opacity: .5; }
+  46%  { transform: translate3d(0, calc(50% + var(--drop-gap) / 2 + 18px), 0) scale(1.06); opacity: .24; }
+  100% { transform: translate3d(0, calc(100% + var(--drop-gap)), 0) scale(.9); opacity: .5; }
+}
+
+@keyframes cast-across {
+  0%   { transform: translate3d(0, 4px, 0) scale(.9); opacity: .5; }
+  46%  { transform: translate3d(calc(50% + var(--gap) / 2), 18px, 0) scale(1.06); opacity: .24; }
+  100% { transform: translate3d(calc(100% + var(--gap)), 4px, 0) scale(.9); opacity: .5; }
 }
 
 /* --------------------------------------------------------- controls */
@@ -488,23 +500,39 @@ body {
 .sheet__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /*
- * Turned sideways, the three piles go across the screen instead of down it —
- * three columns, each still a deck with its own discard beside it. Six cards
- * in a row uses a landscape phone far better than stacking deck over discard,
- * which would squeeze every card down to the leftover height.
+ * Turned sideways there is no height to spend, so each deck moves alongside
+ * its own number instead of above it — still three piles across, but six cards
+ * in a row, which is far more of a landscape phone than two stacked rows can
+ * use. The flight follows the cards and travels across.
  */
 @media (orientation: landscape) {
   .table__grid {
-    grid-template-rows: none;
-    grid-template-columns: repeat(3, 1fr);
-    /* Six cards in a row plus the gaps between them. */
     aspect-ratio: 23 / 5;
     height: min(100cqh, calc(100cqw * 5 / 23));
     max-width: min(100cqw, 1180px);
   }
 
-  /* The flight still travels sideways from deck to discard, so the portrait
-     keyframes carry over untouched. */
+  .site__hit {
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--gap);
+    row-gap: 0;
+    height: 100%;
+  }
+
+  .slot {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+
+  .flyer, .flyer__shadow {
+    width: calc((100% - var(--gap)) / 2);
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .flyer { animation-name: travel-across; }
+  .flyer__shadow { animation-name: cast-across; }
 
   .topbar { padding-bottom: clamp(6px, 1.6vh, 12px); }
   .controls { padding-top: clamp(6px, 1.6vh, 12px); }

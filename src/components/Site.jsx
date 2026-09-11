@@ -2,8 +2,8 @@ import { ActionFace, NumberFace } from './Card.jsx'
 import { FLIGHT_MS, STAGGER_MS } from '../hooks/useGame.js'
 
 /**
- * One pile: the face-down deck with its face-up discard beside it, laid out
- * the way the two sit next to each other on a real table.
+ * One pile: the face-down deck with the card it has already turned face up.
+ * Stacked on a phone held upright, side by side when it is turned.
  *
  * While a flip is in flight the deck has already revealed its next
  * action — which is what happens on a table, the moment the card lifts off —
