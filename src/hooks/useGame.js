@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { newTable, flip, visible, allCards } from '../game/table.js'
-import { DECK_SIZE, PILE_COUNT, PILE_SIZE } from '../game/deck.js'
+import { newTable, flip, visible } from '../game/table.js'
+import { PILE_COUNT } from '../game/deck.js'
+import { load, save } from '../game/save.js'
 
-const STORAGE_KEY = 'where-from/table/v1'
 const UNDO_DEPTH = 12
 
 export const FLIGHT_MS = 560
@@ -13,34 +13,12 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
 
-/**
- * A restored game has to be a whole deck or it is not a game. Anything short,
- * duplicated or reshaped by an old version is thrown away rather than played
- * on, because a silently missing card is the exact failure this app exists to
- * rule out.
- */
-function isWholeDeck(table) {
-  if (!table || !Array.isArray(table.piles) || table.piles.length !== PILE_COUNT) return false
-  for (const pile of table.piles) {
-    if (!Array.isArray(pile?.draw) || !Array.isArray(pile?.discard)) return false
-    if (pile.draw.length < 1 || pile.discard.length < 1) return false
-    if (pile.draw.length + pile.discard.length !== PILE_SIZE) return false
-  }
-  const cards = allCards(table)
-  if (cards.length !== DECK_SIZE) return false
-  if (new Set(cards.map((c) => c?.id)).size !== DECK_SIZE) return false
-  return cards.every((c) => typeof c.number === 'number' && typeof c.action === 'string')
-}
+/** `typeof` first: touching localStorage where it does not exist throws. */
+const store = () => (typeof localStorage === 'undefined' ? null : localStorage)
 
 const restore = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    const saved = JSON.parse(raw)
-    return isWholeDeck(saved) ? saved : null
-  } catch {
-    return null
-  }
+  const held = store()
+  return held ? load(held) : null
 }
 
 const buzz = async (style) => {
@@ -55,19 +33,27 @@ const buzz = async (style) => {
 }
 
 export function useGame() {
-  const [table, setTable] = useState(() => restore() ?? newTable())
-  const [history, setHistory] = useState([])
+  // Read the save once, on the way in. Everything below starts from it.
+  const [saved] = useState(restore)
+  const [table, setTable] = useState(() => saved?.table ?? newTable())
+  const [history, setHistory] = useState(() => saved?.history ?? [])
+  const [chosen, setChosen] = useState(() => saved?.chosen ?? null)
   const [flying, setFlying] = useState(null)
-  const [chosen, setChosen] = useState(null)
   const timer = useRef(null)
 
+  /**
+   * Write the whole game down whenever any of it moves — the deck, the undo
+   * history and the pile you had marked. This runs before the phone has any
+   * chance to sleep, so what comes back after the web view is discarded is the
+   * turn you were on and not a fresh shuffle.
+   *
+   * `flying` is deliberately not saved: it is an animation in progress, and a
+   * game restored mid-flight should land on the turn, not replay it.
+   */
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(table))
-    } catch {
-      /* a full or blocked store costs persistence, not the game in hand */
-    }
-  }, [table])
+    const held = store()
+    if (held) save(held, { table, history, chosen })
+  }, [table, history, chosen])
 
   useEffect(() => () => clearTimeout(timer.current), [])
 

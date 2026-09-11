@@ -27,6 +27,36 @@ turns all three decks over, with the cards flipping through the air.
 - Undo the last dozen flips, mark the pile you mean to take, and close the app
   mid-game without losing it.
 
+## On a phone
+
+It installs as a web app: open the URL, then **Share → Add to Home Screen** on
+iOS, or **Install app** on Android. That matters for more than the icon — a
+home-screen web app gets its own storage that Safari does not sweep up the way
+it does a tab you have not opened in a week.
+
+Once it has been opened once it works with no signal at all. The whole app is
+about 320KB and the service worker keeps a copy, so a cold start at a table
+with no bars deals the hand it was holding rather than showing a blank page.
+
+**Your game survives the phone going to sleep.** iOS throws away a backgrounded
+web view whenever it wants the memory, and what comes back is a cold start, not
+a paused app. Every turn is written down as it happens — the deck, the undo
+history and the pile you had marked — and read back on the way in, so the app
+reopens on the turn you were on. It never reshuffles behind your back. A save
+that is not a whole 81-card deck is refused rather than played on.
+
+## Putting it online
+
+Pushing to `main` builds and publishes to GitHub Pages (`.github/workflows/
+pages.yml`), which gates the deploy on the test suite. Enable it once under
+**Settings → Pages → Source → GitHub Actions**. The site lands at
+`https://<user>.github.io/Where-From/`.
+
+The build needs to know where it is being served from: GitHub Pages puts a
+project site in a subdirectory, Capacitor serves from `file://` where only
+relative paths work. The workflow sets `GITHUB_PAGES=true` and `vite.config.js`
+picks the base path from it.
+
 ## Running it
 
 ```
