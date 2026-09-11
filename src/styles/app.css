@@ -126,26 +126,22 @@ body {
 }
 
 /*
- * Two rows of three: the three decks across the top, the number each one has
- * already turned over directly underneath it.
- *
- * Three cards across a phone is a wide, short block, so the width is what runs
- * out first and the height left over goes into the gap between the rows. The
- * max-width caps that from the other side — it is the widest the cards can be
- * and still leave both rows and the gap inside the height available, so the
- * layout fits on a short screen instead of running off the bottom of it.
+ * Held upright: the three piles run down the screen, each a deck with the card
+ * it has already turned over beside it. A phone has height to spend and almost
+ * no width, so two cards across and three down is the way round that gets the
+ * cards biggest.
  */
 .table__grid {
-  --drop-gap: clamp(14px, min(31cqw, 22cqh), 150px);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: var(--gap);
-  width: 100%;
-  max-width: min(100%, 460px, calc((100cqh - var(--drop-gap)) * 1.071 + 2 * var(--gap)));
-  margin-inline: auto;
+  grid-template-rows: repeat(3, 1fr);
+  gap: var(--gap);
+  height: 100%;
+  height: min(100cqh, calc(100cqw * 21 / 10));
+  aspect-ratio: 10 / 21;
+  max-width: min(100%, 430px);
 }
 
-.site { min-width: 0; }
+.site { min-width: 0; min-height: 0; }
 
 .site__hit {
   /* The 3D stage. Every card in this pile turns inside this perspective. */
@@ -153,9 +149,10 @@ body {
   perspective-origin: 50% 45%;
   position: relative;
   display: grid;
-  grid-template-rows: auto auto;
-  row-gap: var(--drop-gap);
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--gap);
   width: 100%;
+  height: 100%;
   padding: 0;
   border: 0;
   background: none;
@@ -166,7 +163,7 @@ body {
 
 .slot {
   position: relative;
-  aspect-ratio: var(--ratio);
+  height: 100%;
   border-radius: var(--card-radius);
 }
 
@@ -339,10 +336,10 @@ body {
   top: 0;
   left: 0;
   z-index: 10;
-  width: 100%;
-  aspect-ratio: var(--ratio);
+  width: calc((100% - var(--gap)) / 2);
+  height: 100%;
   transform-style: preserve-3d;
-  animation: travel-down var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
+  animation: travel-across var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
   pointer-events: none;
 }
 
@@ -390,13 +387,13 @@ body {
   top: 0;
   left: 0;
   z-index: 9;
-  width: 100%;
-  aspect-ratio: var(--ratio);
+  width: calc((100% - var(--gap)) / 2);
+  height: 100%;
   border-radius: var(--card-radius);
   background: #000;
   filter: blur(11px);
   pointer-events: none;
-  animation: cast-down var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
+  animation: cast-across var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
 }
 
 @keyframes cast-down {
@@ -499,44 +496,93 @@ body {
 
 .sheet__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/*
- * Turned sideways there is no height to spend, so each deck moves alongside
- * its own number instead of above it — still three piles across, but six cards
- * in a row, which is far more of a landscape phone than two stacked rows can
- * use. The flight follows the cards and travels across.
- */
+/* ----------------------------------------------------------- sideways *
+ *  Turned on its side the phone has width to spare and no height at all, so
+ *  the title and the buttons move into a rail down the right and give the
+ *  cards the whole height back. Without that the chrome eats enough of a
+ *  390px-tall screen to shrink a stacked pair to about 79px wide.
+ *
+ *  The piles then go across — three decks along the top, each one above the
+ *  number it has already turned over — and the flight drops onto it.
+ * ------------------------------------------------------------------ */
+
 @media (orientation: landscape) {
+  .app {
+    display: grid;
+    grid-template-columns: 1fr clamp(116px, 19vw, 158px);
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(10px, 2vw, 20px);
+  }
+
+  .table    { grid-column: 1; grid-row: 1 / -1; padding-block: 0; }
+  .topbar   { grid-column: 2; grid-row: 1; padding-bottom: 0; }
+  .controls { grid-column: 2; grid-row: 2; }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding-top: 2px;
+  }
+
+  .topbar h1 { font-size: 13px; letter-spacing: .1em; }
+  .topbar__stats { gap: 14px; }
+  .topbar__stats div { text-align: left; }
+
+  .controls {
+    grid-template-columns: none;
+    grid-auto-rows: max-content;
+    gap: 8px;
+    align-content: end;
+    max-width: none;
+    padding-top: 0;
+    padding-bottom: 2px;
+  }
+
+  .btn { min-height: 46px; }
+
   .table__grid {
-    aspect-ratio: 23 / 5;
-    height: min(100cqh, calc(100cqw * 5 / 23));
-    max-width: min(100cqw, 1180px);
+    /* Height is the scarce dimension here, so the gap between the rows stays
+       small and the cards take what is left. */
+    --drop-gap: clamp(8px, 8cqh, 48px);
+    /* The cards are as tall as the height allows and no taller, so widening
+       the columns spreads the piles across the space rather than leaving them
+       huddled in the middle. */
+    --col-gap: clamp(12px, 6cqw, 48px);
+    grid-template-rows: none;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: var(--col-gap);
+    row-gap: 0;
+    /* The portrait rule takes its width from a fixed height and an aspect
+       ratio; here the cards size from the width, so it has to be stated or
+       the grid shrinks to nothing. */
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    max-width: min(100%, 680px, calc((100cqh - var(--drop-gap)) * 1.071 + 2 * var(--col-gap)));
   }
 
   .site__hit {
-    grid-template-rows: none;
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--gap);
-    row-gap: 0;
-    height: 100%;
+    grid-template-columns: none;
+    grid-template-rows: auto auto;
+    row-gap: var(--drop-gap);
+    column-gap: 0;
+    height: auto;
   }
 
   .slot {
-    aspect-ratio: auto;
-    height: 100%;
+    aspect-ratio: var(--ratio);
+    height: auto;
   }
 
   .flyer, .flyer__shadow {
-    width: calc((100% - var(--gap)) / 2);
-    height: 100%;
-    aspect-ratio: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio);
   }
 
-  .flyer { animation-name: travel-across; }
-  .flyer__shadow { animation-name: cast-across; }
-
-  .topbar { padding-bottom: clamp(6px, 1.6vh, 12px); }
-  .controls { padding-top: clamp(6px, 1.6vh, 12px); }
-  .btn { min-height: 44px; }
+  .flyer { animation-name: travel-down; }
+  .flyer__shadow { animation-name: cast-down; }
 }
 
 /* ------------------------------------------------------ accessibility */
