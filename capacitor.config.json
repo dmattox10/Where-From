@@ -1,6 +1,7 @@
 {
   "appId": "com.danielmattox.wherefrom",
-  "appName": "where-from",
-  "webDir": "build",
-  "bundledWebRuntime": false
+  "appName": "Where From",
+  "webDir": "dist",
+  "android": { "backgroundColor": "#1A1714" },
+  "ios": { "backgroundColor": "#1A1714", "contentInset": "always" }
 }

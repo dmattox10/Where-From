@@ -1,0 +1,595 @@
+/* ------------------------------------------------------------------ *
+ *  Where From — a mid-century table, lit from above.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --ground:     #17140F;
+  --ground-hi:  #251F17;
+  --paper:      #F2E8D6;
+  --paper-edge: #D8C7A8;
+  --ink:        #241E16;
+  --ink-soft:   #7A6A54;
+  --gold:       #D9A128;
+
+  --gap:  clamp(6px, 1.8vw, 15px);
+  --pad:  clamp(8px, 2.5vw, 22px);
+  --card-radius: clamp(9px, 2.6vw, 14px);
+  --ratio: 5 / 7;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Outfit Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color: var(--paper);
+  background: var(--ground);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  user-select: none;
+}
+
+/* The felt: a warm pool of light in the middle, falling off at the edges. */
+.app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  padding:
+    max(var(--pad), env(safe-area-inset-top))
+    max(var(--pad), env(safe-area-inset-right))
+    max(var(--pad), env(safe-area-inset-bottom))
+    max(var(--pad), env(safe-area-inset-left));
+  background:
+    radial-gradient(125% 78% at 50% 22%, var(--ground-hi) 0%, var(--ground) 62%, #0E0C09 100%);
+}
+
+/* A fine tooth over the whole surface so the flat colour is not quite flat. */
+.app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E");
+}
+
+/* ---------------------------------------------------------- top bar */
+
+.topbar {
+  /* Cards in flight lift towards the viewer, so the chrome stays on top of
+     them rather than being clipped by one. */
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: clamp(10px, 3vw, 18px);
+}
+
+.topbar__brand { display: flex; align-items: center; gap: 9px; }
+
+.topbar__mark {
+  width: 15px;
+  height: 15px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 42%, 100% 100%, 0 100%, 0 42%);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(15px, 4.4vw, 19px);
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.topbar__stats { display: flex; gap: 16px; margin: 0; }
+.topbar__stats div { text-align: right; }
+
+.topbar__stats dt {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.topbar__stats dd {
+  margin: 1px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar__stats dd span { font-size: 11px; font-weight: 500; color: var(--ink-soft); }
+
+/* ------------------------------------------------------------ table */
+
+.table {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding-block: clamp(4px, 1.5vw, 12px);
+  /* Size containment gives the grid below a height it can measure against. */
+  container-type: size;
+}
+
+/*
+ * Held upright: the three piles run down the screen, each a deck with the card
+ * it has already turned over beside it. A phone has height to spend and almost
+ * no width, so two cards across and three down is the way round that gets the
+ * cards biggest.
+ */
+.table__grid {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: var(--gap);
+  height: 100%;
+  height: min(100cqh, calc(100cqw * 21 / 10));
+  aspect-ratio: 10 / 21;
+  max-width: min(100%, 430px);
+}
+
+.site { min-width: 0; min-height: 0; }
+
+.site__hit {
+  /* The 3D stage. Every card in this pile turns inside this perspective. */
+  perspective: 1500px;
+  perspective-origin: 50% 45%;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--gap);
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.slot {
+  position: relative;
+  height: 100%;
+  border-radius: var(--card-radius);
+}
+
+/* The rest of the deck, peeking out under the top card. */
+.deck-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--card-radius);
+  background: #0B0907;
+  box-shadow: inset 0 0 0 1px rgba(242, 232, 214, .09);
+  transform: translate(2.5px, 3px);
+}
+
+.deck-edge--2 { transform: translate(5px, 6px); opacity: .72; }
+
+.slot__count {
+  position: absolute;
+  left: 9px;
+  bottom: 9px;
+  z-index: 4;
+  min-width: 21px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: #0B0907;
+  box-shadow: 0 0 0 1.5px rgba(242, 232, 214, .18);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--paper);
+}
+
+.slot__flag {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--gold);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #1A1408;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse { 50% { opacity: .45; } }
+
+/* Marking the pile you mean to take, so you do not lose it mid-argument. */
+.site--chosen .slot--deck::after,
+.site--chosen .slot--discard::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(var(--card-radius) + 4px);
+  box-shadow: 0 0 0 2.5px var(--gold), 0 0 22px -2px rgba(217, 161, 40, .55);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------ faces */
+
+.face {
+  /* Everything on a card is measured against the card, so a face looks the
+     same whatever size the layout has settled on. */
+  container-type: inline-size;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--card-radius);
+  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, .85), 0 1px 0 rgba(255, 255, 255, .1) inset;
+}
+
+.face__frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+/* The hairline keyline every card carries, inset from the trim. */
+.face__frame::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: calc(var(--card-radius) - 4px);
+  border: 1px solid currentColor;
+  opacity: .28;
+  pointer-events: none;
+}
+
+.face__corner {
+  position: absolute;
+  font-size: clamp(8px, 7cqw, 12px);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .6;
+  font-variant-numeric: tabular-nums;
+}
+
+.face__corner--tl { top: 10px; left: 11px; }
+.face__corner--br { right: 11px; bottom: 10px; transform: rotate(180deg); }
+
+/* -- the action face: full-bleed colour, read across a table ---------- */
+
+.face--action {
+  color: var(--paper);
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, .055) 0 6px,
+      rgba(0, 0, 0, 0) 6px 13px
+    ),
+    linear-gradient(158deg, var(--hue) 0%, var(--hue-deep) 100%);
+}
+
+.face__icon {
+  width: 47%;
+  max-width: 74px;
+  margin-bottom: 7px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .28));
+}
+
+.face__label {
+  font-size: clamp(8.5px, 7cqw, 12.5px);
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  opacity: .95;
+}
+
+/* -- the number face: cream stock, one big numeral -------------------- */
+
+.face--number {
+  color: var(--ink);
+  background: linear-gradient(168deg, #FBF4E6 0%, var(--paper) 48%, var(--paper-edge) 100%);
+}
+
+.face__number {
+  font-size: clamp(34px, 46cqw, 92px);
+  font-weight: 800;
+  line-height: .9;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+}
+
+.face__rule {
+  width: 34%;
+  height: 2px;
+  margin-top: 9px;
+  background: currentColor;
+  opacity: .32;
+}
+
+/* ----------------------------------------------------------- flight *
+ *  The card lifts off the deck, turns over in the air and lands on the
+ *  number below it. Travel and turn are split across two elements so the
+ *  arc and the rotation can be eased independently.
+ * ------------------------------------------------------------------ */
+
+.flyer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  width: calc((100% - var(--gap)) / 2);
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: travel-across var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
+  pointer-events: none;
+}
+
+.flyer__inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: turn var(--flight) cubic-bezier(.46, .05, .26, 1) var(--delay) both;
+}
+
+.flyer__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--card-radius);
+}
+
+.flyer__face--back { transform: rotateY(180deg); }
+
+.flyer__face .face {
+  box-shadow: 0 24px 34px -12px rgba(0, 0, 0, .75), 0 1px 0 rgba(255, 255, 255, .1) inset;
+}
+
+@keyframes turn {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(180deg); }
+}
+
+@keyframes travel-down {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  46%  { transform: translate3d(-5%, calc(50% + var(--drop-gap) / 2), 120px) scale(1.02); }
+  100% { transform: translate3d(0, calc(100% + var(--drop-gap)), 0) scale(1); }
+}
+
+@keyframes travel-across {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  46%  { transform: translate3d(calc(50% + var(--gap) / 2), -4%, 120px) scale(1.02); }
+  100% { transform: translate3d(calc(100% + var(--gap)), 0, 0) scale(1); }
+}
+
+/* The card's shadow on the felt, travelling with it but staying flat. */
+.flyer__shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9;
+  width: calc((100% - var(--gap)) / 2);
+  height: 100%;
+  border-radius: var(--card-radius);
+  background: #000;
+  filter: blur(11px);
+  pointer-events: none;
+  animation: cast-across var(--flight) cubic-bezier(.36, .08, .2, 1) var(--delay) both;
+}
+
+@keyframes cast-down {
+  0%   { transform: translate3d(0, 4px, 0) scale(.9); opacity: .5; }
+  46%  { transform: translate3d(0, calc(50% + var(--drop-gap) / 2 + 18px), 0) scale(1.06); opacity: .24; }
+  100% { transform: translate3d(0, calc(100% + var(--drop-gap)), 0) scale(.9); opacity: .5; }
+}
+
+@keyframes cast-across {
+  0%   { transform: translate3d(0, 4px, 0) scale(.9); opacity: .5; }
+  46%  { transform: translate3d(calc(50% + var(--gap) / 2), 18px, 0) scale(1.06); opacity: .24; }
+  100% { transform: translate3d(calc(100% + var(--gap)), 4px, 0) scale(.9); opacity: .5; }
+}
+
+/* --------------------------------------------------------- controls */
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1.7fr 1fr;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  max-width: 540px;
+  margin-inline: auto;
+  padding-top: clamp(12px, 4vw, 22px);
+}
+
+.btn {
+  min-height: 52px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 13px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .12s ease, opacity .12s ease, background .12s ease;
+}
+
+.btn:active:not(:disabled) { transform: scale(.96); }
+.btn:disabled { opacity: .32; cursor: default; }
+
+.btn--primary {
+  background: linear-gradient(176deg, #E8B33C 0%, var(--gold) 55%, #B8841B 100%);
+  color: #1A1408;
+  box-shadow: 0 6px 16px -6px rgba(217, 161, 40, .7), 0 1px 0 rgba(255, 255, 255, .35) inset;
+}
+
+.btn--ghost {
+  background: rgba(242, 232, 214, .07);
+  color: var(--paper);
+  box-shadow: 0 0 0 1px rgba(242, 232, 214, .14) inset;
+}
+
+/* ------------------------------------------------------------ sheet */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--pad);
+  padding-bottom: max(var(--pad), env(safe-area-inset-bottom));
+  background: rgba(10, 8, 6, .68);
+  backdrop-filter: blur(7px);
+  animation: fade .2s ease both;
+}
+
+@keyframes fade { from { opacity: 0; } }
+
+.sheet__card {
+  width: 100%;
+  max-width: 430px;
+  padding: 22px;
+  border-radius: 20px;
+  background: var(--ground-hi);
+  box-shadow: 0 0 0 1px rgba(242, 232, 214, .1) inset, 0 -20px 50px -12px rgba(0, 0, 0, .8);
+  animation: rise .26s cubic-bezier(.2, .9, .3, 1) both;
+}
+
+@keyframes rise { from { transform: translateY(18px); opacity: 0; } }
+
+.sheet__card h2 {
+  margin: 0 0 7px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.sheet__card p {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.sheet__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ----------------------------------------------------------- sideways *
+ *  Turned on its side the phone has width to spare and no height at all, so
+ *  the title and the buttons move into a rail down the right and give the
+ *  cards the whole height back. Without that the chrome eats enough of a
+ *  390px-tall screen to shrink a stacked pair to about 79px wide.
+ *
+ *  The piles then go across — three decks along the top, each one above the
+ *  number it has already turned over — and the flight drops onto it.
+ * ------------------------------------------------------------------ */
+
+@media (orientation: landscape) {
+  .app {
+    display: grid;
+    grid-template-columns: 1fr clamp(116px, 19vw, 158px);
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(10px, 2vw, 20px);
+  }
+
+  .table    { grid-column: 1; grid-row: 1 / -1; padding-block: 0; }
+  .topbar   { grid-column: 2; grid-row: 1; padding-bottom: 0; }
+  .controls { grid-column: 2; grid-row: 2; }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding-top: 2px;
+  }
+
+  .topbar h1 { font-size: 13px; letter-spacing: .1em; }
+  .topbar__stats { gap: 14px; }
+  .topbar__stats div { text-align: left; }
+
+  .controls {
+    grid-template-columns: none;
+    grid-auto-rows: max-content;
+    gap: 8px;
+    align-content: end;
+    max-width: none;
+    padding-top: 0;
+    padding-bottom: 2px;
+  }
+
+  .btn { min-height: 46px; }
+
+  .table__grid {
+    /* Height is the scarce dimension here, so the gap between the rows stays
+       small and the cards take what is left. */
+    --drop-gap: clamp(8px, 8cqh, 48px);
+    /* The cards are as tall as the height allows and no taller, so widening
+       the columns spreads the piles across the space rather than leaving them
+       huddled in the middle. */
+    --col-gap: clamp(12px, 6cqw, 48px);
+    grid-template-rows: none;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: var(--col-gap);
+    row-gap: 0;
+    /* The portrait rule takes its width from a fixed height and an aspect
+       ratio; here the cards size from the width, so it has to be stated or
+       the grid shrinks to nothing. */
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    max-width: min(100%, 680px, calc((100cqh - var(--drop-gap)) * 1.071 + 2 * var(--col-gap)));
+  }
+
+  .site__hit {
+    grid-template-columns: none;
+    grid-template-rows: auto auto;
+    row-gap: var(--drop-gap);
+    column-gap: 0;
+    height: auto;
+  }
+
+  .slot {
+    aspect-ratio: var(--ratio);
+    height: auto;
+  }
+
+  .flyer, .flyer__shadow {
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio);
+  }
+
+  .flyer { animation-name: travel-down; }
+  .flyer__shadow { animation-name: cast-down; }
+}
+
+/* ------------------------------------------------------ accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .flyer, .flyer__inner, .flyer__shadow, .slot__flag, .sheet, .sheet__card {
+    animation: none !important;
+  }
+  .btn { transition: none; }
+}
