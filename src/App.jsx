@@ -2,10 +2,16 @@ import { useState } from 'react'
 import Site from './components/Site.jsx'
 import { useGame } from './hooks/useGame.js'
 import { DECK_SIZE } from './game/deck.js'
+import { track } from './analytics.js'
 
 export default function App() {
   const { seen, flying, chosen, choose, turn, canUndo, flipAll, undo, reset } = useGame()
   const [confirming, setConfirming] = useState(false)
+
+  // What a tool like this needs to report is whether anybody plays it and how
+  // far they get -- a game abandoned on turn two and one played to the end of
+  // the deck are the same single page_view otherwise. `turn` is carried on
+  // every event so depth is answerable without a session-scoped dimension.
 
   const left = seen.reduce((sum, s) => sum + s.remaining, 0)
 
@@ -30,7 +36,7 @@ export default function App() {
               index={index}
               seen={site}
               chosen={chosen === index}
-              onChoose={() => choose(index)}
+              onChoose={() => { track('card_chosen', { turn, pile: index }); choose(index) }}
               flight={flying ? { card: flying.turned[index], leaving: flying.leaving[index] } : null}
             />
           ))}
@@ -41,12 +47,16 @@ export default function App() {
         <button
           type="button"
           className="btn btn--ghost"
-          onClick={undo}
+          onClick={() => { track('undo_used', { turn }); undo() }}
           disabled={!canUndo}
         >
           Undo
         </button>
-        <button type="button" className="btn btn--primary" onClick={flipAll}>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => { track('turn_taken', { turn, face_down: left }); flipAll() }}
+        >
           Flip
         </button>
         <button
@@ -70,7 +80,13 @@ export default function App() {
               <button
                 type="button"
                 className="btn btn--primary"
-                onClick={() => { reset(); setConfirming(false) }}
+                onClick={() => {
+                  // Fired before the reset so the turn count is the one the
+                  // abandoned game reached, not zero.
+                  track('deck_reset', { turn, face_down: left })
+                  reset()
+                  setConfirming(false)
+                }}
               >
                 New deck
               </button>
