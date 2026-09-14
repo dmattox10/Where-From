@@ -14,7 +14,11 @@ COPY . .
 # base path, and the unset branch gives './' — relative, which is what both
 # Capacitor (file://) and a site served at the root of its own domain need.
 # Setting it would produce '/Where-From/' and every asset here would 404.
-RUN npm run build
+#
+# build:web, not build. The GA tag is injected only by this script (see
+# vite.config.js); `npm run build` stays clean because `npm run sync` uses it to
+# feed `cap sync`, and analytics must not reach the store binary.
+RUN npm run build:web
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
