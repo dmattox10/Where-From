@@ -96,3 +96,16 @@ is exact, and so is the coupling across a flip — only *which* number sits behi
 ## Not built yet
 
 The score sheet. This is the deck half; you still keep score on paper.
+
+## Licence and trademark
+
+The code is MIT, as in [LICENSE](LICENSE).
+
+This is an unofficial fan-made companion app. It is not affiliated with,
+endorsed by, or connected to the publishers of *Welcome To...*, and it is not a
+substitute for owning the game — it replaces the construction deck for people
+who already own a copy and keep score on the printed sheets. No artwork, text
+or other material from the published game is reproduced here; the card counts
+are factual game mechanics, and every icon and pixel in this repository is the
+author's own. *Welcome To...* and any associated marks belong to their
+respective owners.
