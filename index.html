@@ -8,6 +8,35 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317140F'/%3E%3Cpath d='M16 7l9 7.5V25H7V14.5z' fill='%23D9A128'/%3E%3C/svg%3E" />
     <title>Where From</title>
+
+    <!-- These reach the web build only in any meaningful sense: this same
+         index.html feeds the Capacitor iOS and Android builds, where a meta
+         description and an og tag are inert. Harmless there, and needed here. -->
+    <meta name="description" content="Where From is the Welcome To... construction deck, playable in the browser. The deck, the shuffle and the saved game are all on your device, so it works with no signal." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://wherefrom.danielmattox.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Where From" />
+    <meta property="og:title" content="Where From: the Welcome To... construction deck" />
+    <meta property="og:description" content="Playable in any browser, and offline once it has loaded. No account, no signal, nothing stored anywhere but your own device." />
+    <meta property="og:url" content="https://wherefrom.danielmattox.com/" />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "operatingSystem": "Web browser",
+        "name": "Where From",
+        "url": "https://wherefrom.danielmattox.com/",
+        "applicationCategory": "GameApplication",
+        "description": "The Welcome To... construction deck, playable in a browser and offline once loaded.",
+        "author": {
+          "@type": "Person",
+          "name": "Daniel Mattox",
+          "url": "https://danielmattox.com"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
