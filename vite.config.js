@@ -11,10 +11,53 @@ import { VitePWA } from 'vite-plugin-pwa'
  */
 const base = process.env.GITHUB_PAGES ? '/Where-From/' : './'
 
+/*
+ * Analytics, and ONLY in the build nginx serves.
+ *
+ * capacitor.config.json sets webDir to "dist", and `npm run sync` is literally
+ * `npm run build && cap sync` -- so the exact bytes built here are copied into
+ * ios/App/App/public and the Android assets. A <script> written into
+ * index.html would therefore not be a web-only change: it would ship inside
+ * the store binary, where Google Analytics is tracking under Apple's
+ * definition and needs an ATT prompt or the app is rejected.
+ *
+ * That is not hypothetical on this box. Plyr2-Client removed its tag from the
+ * web source and the stale copies under ios/ and android/ went on carrying the
+ * measurement ID afterwards.
+ *
+ * So the tag is injected from an environment variable that only the web image
+ * sets (Dockerfile runs `npm run build:web`). A plain `npm run build`, which is
+ * what `sync` calls before `cap sync`, produces a dist with no tag. The default
+ * is deliberately the safe one: forgetting the flag loses some web analytics,
+ * whereas the opposite default ships tracking to the App Store.
+ */
+function analytics() {
+  const id = process.env.WHEREFROM_GA_ID
+  return {
+    name: 'analytics-web-only',
+    transformIndexHtml(html) {
+      if (!id) return html
+      return html.replace(
+        '</head>',
+        `    <!-- Google tag (gtag.js) - web build only, see vite.config.js -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', '${id}');
+    </script>
+  </head>`
+      )
+    },
+  }
+}
+
 export default defineConfig({
   base,
   plugins: [
     react(),
+    analytics(),
     VitePWA({
       registerType: 'autoUpdate',
       // Registered by hand in main.jsx, because a service worker cannot be

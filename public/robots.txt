@@ -1,0 +1,13 @@
+# robots.txt for wherefrom.danielmattox.com
+#
+# The deck, the shuffle and the saved game are all in the browser, so there is
+# nothing here a crawler could ask for that it should not have.
+#
+# One thing to leave alone: sw.js is served no-store by nginx.conf on purpose
+# (a mis-cached service worker freezes the app on phones that already installed
+# it). It is not listed in the sitemap and it does not need a Disallow - a
+# crawler asking for it is harmless, it just gets a fresh copy.
+User-agent: *
+Allow: /
+
+Sitemap: https://wherefrom.danielmattox.com/sitemap.xml
