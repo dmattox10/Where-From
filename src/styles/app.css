@@ -593,3 +593,38 @@ body {
   }
   .btn { transition: none; }
 }
+
+/* ------------------------------------------------------------ disclaimer */
+
+/* A fan-made tool that names a published game has to say so where a player
+   actually sees it, not only in the README. It sits under the controls rather
+   than in the topbar because the topbar already carries the brand and the two
+   live counters, and because this is the one piece of text on the page that
+   never changes while a game is running.
+   --paper-edge, not --ink-soft: ink-soft is for the 9px uppercase stat labels,
+   and at this size on this background it reads as decoration rather than as
+   something meant. The line has to be legible to count. */
+.disclaimer {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 540px;
+  margin: clamp(8px, 2.5vw, 14px) auto 0;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--paper-edge);
+}
+
+.disclaimer em { font-style: italic; }
+
+/* Short viewports give the card table every pixel it can have, so the line
+   tightens rather than disappearing - a disclaimer that vanishes exactly when
+   the screen is small is not a disclaimer. */
+@media (max-height: 620px) {
+  .disclaimer {
+    margin-top: 6px;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+}

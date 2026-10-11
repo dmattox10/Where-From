@@ -39,7 +39,20 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- The disclaimer twice, on purpose. App.jsx renders it for anybody with
+         JavaScript; this copy is what GPTBot, ClaudeBot and PerplexityBot read,
+         because they fetch the bundle and never run it. createRoot replaces
+         #root's children rather than hydrating, so React overwrites this the
+         moment it mounts and the two never have to stay in step.
+         It ships into the Capacitor builds as well, which is correct: a
+         fan-made app should say what it is in the store binary too. -->
+    <div id="root">
+      <p>
+        Where From is an unofficial fan-made companion. It is not affiliated
+        with or endorsed by the publishers of <em>Welcome To...</em>, and it is
+        not a substitute for owning the game.
+      </p>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

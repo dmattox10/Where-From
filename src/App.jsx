@@ -58,6 +58,12 @@ export default function App() {
         </button>
       </footer>
 
+      <p className="disclaimer">
+        Unofficial fan-made companion. Not affiliated with or endorsed by the
+        publishers of <em>Welcome To...</em>, and not a substitute for owning
+        the game.
+      </p>
+
       {confirming && (
         <div className="sheet" role="dialog" aria-modal="true" aria-label="Start a new deck">
           <div className="sheet__card">
